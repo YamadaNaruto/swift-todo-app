@@ -6,12 +6,22 @@
 //
 
 import SwiftUI
+import SwiftData
+import FirebaseCore
+
+
+
+
 
 @main
 struct ToDoapp_with_swiftApp: App {
+    init () {
+        FirebaseApp.configure()
+    }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
+        .modelContainer(for: Task.self)
     }
 }
