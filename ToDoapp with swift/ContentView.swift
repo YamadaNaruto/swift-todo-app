@@ -12,49 +12,63 @@ struct ContentView: View {
     @State private var isPresented: Bool = false
     @State private var taskName = ""
     @Query var tasks: [Task]
-    @Environment(\.modelContext)  private var modelContext
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
         NavigationStack {
-            Text("TODO アプリ")
-                .font(.largeTitle)
-            Button("タスクの追加"){
-                isPresented = true
-            }
-            //タスクリストを表示
-            Text("タスク数: \(tasks.count)")
-            List{
-                ForEach(tasks){task in
+            List {
+                ForEach(tasks) { task in
                     @Bindable var task = task
-                    Toggle(task.name,isOn : $task.isCompleted)
-                        .strikethrough(task.isCompleted)
-                }.onDelete(perform: { offsets in
+                    Toggle(isOn: $task.isCompleted) {
+                        Text(task.name)
+                            .strikethrough(task.isCompleted)
+                            .foregroundColor(task.isCompleted ? .gray : .primary)
+                    }
+                }
+                .onDelete { offsets in
                     offsets.forEach { index in
                         modelContext.delete(tasks[index])
                     }
-                })
-                
-                
-                
-            }
-            
-            .sheet(isPresented: $isPresented) {
-                Text("タスクの追加")
-                TextField("ここに入力", text: $taskName)
-                Button("追加"){
-                    //tasksに追加
-                    let newTask = Task(name: taskName)
-                    
-                    modelContext.insert(newTask)
-                    taskName = ""
-                    isPresented = false
-                    
-                    
-                    
                 }
+            }
+            .navigationTitle("TODO")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        isPresented = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $isPresented) {
+                VStack(spacing: 24) {
+                    Text("タスクの追加")
+                        .font(.title2)
+                        .bold()
+                    TextField("タスク名を入力", text: $taskName)
+                        .textFieldStyle(.roundedBorder)
+                    Button {
+                        let newTask = Task(name: taskName)
+                        modelContext.insert(newTask)
+                        taskName = ""
+                        isPresented = false
+                    } label: {
+                        Text("追加")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
+                }
+                .padding()
+                .presentationDetents([.medium])
             }
         }
     }
 }
-        #Preview {
-            ContentView()
-        }
+
+#Preview {
+    ContentView()
+}
